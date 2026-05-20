@@ -124,3 +124,11 @@ def analyze(request: TextRequest):
 
         "flags": list(set(flags))
     }
+
+@app.get("/debug")
+def debug():
+
+    return {
+        "token_exists": os.getenv("HF_TOKEN") is not None,
+        "token_preview": str(os.getenv("HF_TOKEN"))[:10]
+    }
