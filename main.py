@@ -38,7 +38,11 @@ def analyze(request: TextRequest):
     payload = {
         "inputs": text
     }
+    token = os.getenv("HF_TOKEN")
 
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
     try:
 
         response = requests.post(
