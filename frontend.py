@@ -31,7 +31,7 @@ if st.button("Analyze"):
         try:
 
             response = requests.post(
-                "http://127.0.0.1:8000/analyze",
+                "https://propaganda-detector-using-ai-1.onrender.com/analyze",
                 json={"text": text},
                 timeout=60
             )
