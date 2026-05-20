@@ -1,8 +1,4 @@
 venv/
-    __pycache__/
-    *.pyc
-    ```
-    Save and close the file. This ensures Git never tries to look at your environment or compiled Python cache files ever again.
-  
-  
-    Run this specific command in your terminal to evict the folder from Git's memory:
+__pycache__/
+*.pyc
+.env

@@ -1,29 +1,83 @@
 from fastapi import FastAPI
-from transformers import pipeline
 from pydantic import BaseModel
+import requests
 
 app = FastAPI()
+
+
+API_URL = "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+
+headers = {
+    "Authorization": "Bearer YOUR_HUGGINGFACE_API_KEY"
+}
+
+
 class TextRequest(BaseModel):
     text: str
 
-classifier = pipeline(
-    "sentiment-analysis",
-    model="distilbert-base-uncased-finetuned-sst-2-english"
-)
 
 @app.get("/")
 def home():
-    return {"message": "Propaganda Detector API Running"}
+    return {
+        "message": "AI Propaganda Detector API Running"
+    }
 
 @app.get("/health")
 def health():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy"
+    }
+
 
 @app.post("/analyze")
 def analyze(request: TextRequest):
+
     text = request.text
 
-    result = classifier(text)
+    payload = {
+        "inputs": text
+    }
+
+    try:
+
+        response = requests.post(
+            API_URL,
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
+
+        print("STATUS CODE:", response.status_code)
+        print("RAW RESPONSE:", response.text)
+
+        result = response.json()
+
+    except Exception as e:
+
+        print("REQUEST ERROR:", e)
+
+        return {
+            "error": str(e)
+        }
+
+    if isinstance(result, dict) and "error" in result:
+
+        return {
+            "error": result["error"]
+        }
+
+    try:
+        sentiment = result[0][0]
+
+    except Exception as e:
+
+        print("PARSING ERROR:", e)
+
+        return {
+            "error": "Failed to parse model response",
+            "raw_response": result
+        }
+
 
     score = 0
     flags = []
@@ -35,26 +89,37 @@ def analyze(request: TextRequest):
         "breaking",
         "they don't want you to know",
         "must watch",
-        "unbelievable"
+        "unbelievable",
+        "secret truth",
+        "wake up",
+        "mainstream media"
     ]
 
     for word in clickbait_words:
+
         if word in lower_text:
             score += 20
             flags.append("clickbait language")
 
-    sentiment = result[0]
-
     if sentiment["label"] == "NEGATIVE":
+
         score += int(sentiment["score"] * 50)
+
         flags.append("high emotional intensity")
 
     if score > 100:
         score = 100
 
     return {
+
         "input_text": text,
-        "sentiment": sentiment,
+
+        "sentiment": {
+            "label": sentiment["label"],
+            "score": round(sentiment["score"], 3)
+        },
+
         "manipulation_score": score,
+
         "flags": list(set(flags))
     }

@@ -9,14 +9,12 @@ st.set_page_config(
 
 st.title("📰 AI Propaganda Detector")
 
-st.markdown(
-    """
+st.markdown("""
 Analyze text for:
 - Clickbait language
 - Emotional manipulation
 - Sensational phrasing
-"""
-)
+""")
 
 text = st.text_area(
     "Paste text below",
@@ -27,30 +25,44 @@ if st.button("Analyze"):
 
     if text.strip() == "":
         st.warning("Please enter some text.")
+
     else:
 
-        response = requests.post(
-            "http://127.0.0.1:8000/analyze",
-            json={"text": text}
-        )
+        try:
 
-        data = response.json()
+            response = requests.post(
+                "http://127.0.0.1:8000/analyze",
+                json={"text": text},
+                timeout=60
+            )
 
-        st.subheader("📊 Analysis Result")
+            st.write("Status Code:", response.status_code)
 
-        st.metric(
-            "Manipulation Score",
-            f"{data['manipulation_score']}%"
-        )
+            data = response.json()
 
-        st.subheader("🚩 Flags")
+            if "error" in data:
+                st.error(data["error"])
 
-        if data["flags"]:
-            for flag in data["flags"]:
-                st.write(f"- {flag}")
-        else:
-            st.write("No major manipulation indicators detected.")
+            else:
 
-        st.subheader("🧠 Sentiment")
+                st.subheader("📊 Analysis Result")
 
-        st.json(data["sentiment"])
+                st.metric(
+                    "Manipulation Score",
+                    f"{data['manipulation_score']}%"
+                )
+
+                st.subheader("🚩 Flags")
+
+                if data["flags"]:
+                    for flag in data["flags"]:
+                        st.write(f"- {flag}")
+                else:
+                    st.write("No major manipulation indicators detected.")
+
+                st.subheader("🧠 Sentiment")
+
+                st.json(data["sentiment"])
+
+        except Exception as e:
+            st.error(f"Request failed: {e}")
