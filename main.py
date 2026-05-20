@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
+import os
 
 app = FastAPI()
 
@@ -8,7 +9,7 @@ app = FastAPI()
 API_URL = "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english"
 
 headers = {
-    "Authorization": "Bearer YOUR_HUGGINGFACE_API_KEY"
+    "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
 }
 
 
