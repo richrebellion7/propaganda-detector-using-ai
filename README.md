@@ -1,29 +1,88 @@
 # 📰 AI Propaganda Detector
 
-A lightweight AI-assisted propaganda and manipulation analysis web application built using FastAPI, Streamlit, and HuggingFace Transformers.
+A full-stack AI-powered web application that analyzes text for propaganda patterns, emotional manipulation, clickbait phrasing, conspiracy language, and urgency tactics.
 
-## Features
-- Sentiment analysis
-- Clickbait detection
-- Emotional manipulation scoring
-- FastAPI backend
-- Streamlit frontend
+## 🚀 Live Demo
 
-## Tech Stack
-- Python
-- FastAPI
-- Streamlit
-- HuggingFace Transformers
-- Torch
+Frontend:
+https://propaganda-detector-using-ai-tazeem.streamlit.app/
 
-## Run Locally
+Backend API:
+https://propaganda-detector-using-ai-1.onrender.com/
 
-### Backend
-```bash
-uvicorn main:app --reload
-```
+---
+
+## ✨ Features
+
+- Propaganda pattern detection
+- Clickbait analysis
+- Fear-based language detection
+- Conspiracy phrasing detection
+- Urgency manipulation detection
+- Emotional intensity scoring
+- Severity classification (LOW / MEDIUM / HIGH)
+- Duplicate phrase suppression
+- Real-time AI sentiment analysis
+- Cloud deployment with Streamlit + Render
+
+---
+
+## 🧠 Tech Stack
 
 ### Frontend
+- Streamlit
+
+### Backend
+- FastAPI
+- Python
+
+### AI / NLP
+- HuggingFace Inference API
+- DistilBERT Sentiment Model
+
+### Deployment
+- Streamlit Cloud
+- Render
+
+---
+
+## ⚙️ Architecture
+
+User Input
+↓
+Streamlit Frontend
+↓
+FastAPI Backend
+↓
+HuggingFace Inference API
+↓
+Custom Heuristic Scoring Engine
+↓
+Severity Classification
+↓
+Frontend Visualization
+
+---
+
+## 📊 Example Detection
+
+### Input
+BREAKING! The mainstream media is hiding the hidden truth. Act now before this gets deleted!
+
+### Output
+- Severity: HIGH
+- Manipulation Score: 92%
+- Flags:
+  - clickbait language
+  - conspiracy phrasing
+  - urgency manipulation
+  - high emotional intensity
+
+---
+
+## 🛠️ Local Setup
+
+### Clone repository
+
 ```bash
-streamlit run frontend.py
-```
+git clone https://github.com/richrebellion7/propaganda-detector-using-ai.git
