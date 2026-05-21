@@ -1,7 +1,13 @@
 import streamlit as st
 import requests
+from dotenv import load_dotenv
+import os
 
-API_URL = "https://propaganda-detector-using-ai-1.onrender.com/analyze"
+load_dotenv()
+API_URL = os.getenv("BACKEND_URL")
+
+if not API_URL:
+    API_URL = st.secrets["BACKEND_URL"]
 
 st.set_page_config(
     page_title="AI Propaganda Detector",
@@ -22,9 +28,18 @@ example = st.selectbox(
     "Try an example",
     [
         "",
-        "BREAKING shocking truth they don't want you to know!",
-        "Scientists publish new climate report.",
-        "The mainstream media is hiding this unbelievable secret."
+
+        "BREAKING: The mainstream media is hiding the hidden truth about this crisis. Share this immediately before it's deleted and wake people up!",
+
+        "Scientists from multiple universities published a peer-reviewed climate report discussing rising temperatures and long-term environmental impacts.",
+
+        "SHOCKING revelation exposes secret agenda behind government policies. They don't want you to know how dangerous this situation really is!",
+
+        "Local authorities announced new healthcare initiatives aimed at improving rural hospital access and reducing emergency response times.",
+
+        "ACT NOW before it's too late! This unbelievable report reveals how controlled narratives manipulate public opinion every single day.",
+
+        "Researchers presented new findings on artificial intelligence regulation during an international technology and ethics conference this week."
     ]
 )
 
@@ -51,6 +66,9 @@ if st.button("Analyze"):
                     timeout=60
                 )
 
+                if response.status_code != 200:
+                    st.error("Backend returned an error.")
+                    st.stop()
                 data = response.json()
 
                 if "error" in data:
@@ -59,9 +77,10 @@ if st.button("Analyze"):
                 else:
 
                     score = data["manipulation_score"]
+                    severity = data["severity"]
 
                     st.subheader("📊 Analysis Result")
-
+    
                     if score >= 70:
                         st.error(f"Manipulation Score: {score}%")
 
@@ -70,6 +89,15 @@ if st.button("Analyze"):
 
                     else:
                         st.success(f"Manipulation Score: {score}%")
+
+                    if severity == "HIGH":
+                        st.error(f"⚠️ Severity Level: {severity}")
+
+                    elif severity == "MEDIUM":
+                        st.warning(f"⚠️ Severity Level: {severity}")
+
+                    else:
+                        st.success(f"⚠️ Severity Level: {severity}")
 
                     st.subheader("🚩 Flags")
 

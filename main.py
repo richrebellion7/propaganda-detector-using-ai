@@ -2,15 +2,13 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
-
 API_URL = "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english"
-
-headers = {
-    "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
-}
 
 
 class TextRequest(BaseModel):
@@ -22,6 +20,7 @@ def home():
     return {
         "message": "AI Propaganda Detector API Running"
     }
+
 
 @app.get("/health")
 def health():
@@ -35,14 +34,21 @@ def analyze(request: TextRequest):
 
     text = request.text
 
+    if not text.strip():
+        return {
+            "error": "Input text cannot be empty"
+        }
+
     payload = {
         "inputs": text
     }
+
     token = os.getenv("HF_TOKEN")
 
     headers = {
         "Authorization": f"Bearer {token}"
     }
+
     try:
 
         response = requests.post(
@@ -51,9 +57,6 @@ def analyze(request: TextRequest):
             json=payload,
             timeout=60
         )
-
-        print("STATUS CODE:", response.status_code)
-        print("RAW RESPONSE:", response.text)
 
         result = response.json()
 
@@ -72,6 +75,7 @@ def analyze(request: TextRequest):
         }
 
     try:
+
         sentiment = result[0][0]
 
     except Exception as e:
@@ -83,37 +87,138 @@ def analyze(request: TextRequest):
             "raw_response": result
         }
 
-
     score = 0
-    flags = []
+    flags = set()
+    matched_words = set()
 
     lower_text = text.lower()
 
-    clickbait_words = [
-        "shocking",
-        "breaking",
-        "they don't want you to know",
-        "must watch",
-        "unbelievable",
-        "secret truth",
-        "wake up",
-        "mainstream media"
-    ]
+    lower_text = lower_text.replace("dont", "don't")
 
-    for word in clickbait_words:
+    weights = {
+    "clickbait language": 8,
+    "fear-based language": 12,
+    "conspiracy phrasing": 15,
+    "urgency manipulation": 10
+    }
 
-        if word in lower_text:
-            score += 20
-            flags.append("clickbait language")
+    patterns = {
+
+        "clickbait language": [
+            "breaking",
+            "shocking",
+            "unbelievable",
+            "must watch",
+            "you won't believe",
+            "gone wrong",
+            "viral",
+            "exposed",
+            "revealed",
+            "jaw dropping",
+            "insane",
+            "this changes everything",
+            "what happens next",
+            "watch till the end",
+            "mind blowing"
+        ],
+
+        "fear-based language": [
+            "danger",
+            "collapse",
+            "crisis",
+            "threat",
+            "destroyed",
+            "disaster",
+            "catastrophe",
+            "panic",
+            "chaos",
+            "deadly",
+            "risk",
+            "emergency",
+            "terrifying",
+            "warning",
+            "unsafe"
+        ],
+
+        "conspiracy phrasing": [
+            "hidden truth",
+            "secret agenda",
+            "wake up",
+            "mainstream media",
+            "they don't want you to know",
+            "cover up",
+            "deep state",
+            "brainwashing",
+            "propaganda",
+            "media lies",
+            "controlled narrative",
+            "suppressed",
+            "manipulated",
+            "inside job",
+            "government is hiding"
+        ],
+
+        "urgency manipulation": [
+            "act now",
+            "urgent",
+            "before it's deleted",
+            "share this immediately",
+            "too late",
+            "limited time",
+            "don't ignore",
+            "last chance",
+            "right now",
+            "immediately",
+            "hurry",
+            "time is running out",
+            "fast",
+            "spread this",
+            "important"
+        ]
+    }
+
+    for category, words in patterns.items():
+
+        for word in words:
+
+            if word in lower_text:
+
+                if word not in matched_words:
+
+                    score += weights[category]
+
+                    matched_words.add(word)
+
+                flags.add(category)
+
+    letters = [c for c in text if c.isalpha()]
+
+    uppercase_ratio = (
+        sum(1 for c in letters if c.isupper())
+        / max(len(letters), 1)
+    )
+
+    if uppercase_ratio > 0.5:
+
+        score += 20
+        flags.add("excessive capitalization")
 
     if sentiment["label"] == "NEGATIVE":
 
-        score += int(sentiment["score"] * 50)
+        score += int(sentiment["score"] * 40)
 
-        flags.append("high emotional intensity")
+        flags.add("high emotional intensity")
 
     if score > 100:
         score = 100
+
+    if score >= 70:
+        severity = "HIGH"
+
+    elif score >= 40:
+        severity = "MEDIUM"
+    else:
+        severity = "LOW"
 
     return {
 
@@ -125,9 +230,11 @@ def analyze(request: TextRequest):
         },
 
         "manipulation_score": score,
+        "severity": severity,
 
-        "flags": list(set(flags))
+        "flags": sorted(list(set(flags)))
     }
+
 
 @app.get("/debug")
 def debug():
