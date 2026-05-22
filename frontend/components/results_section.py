@@ -1,7 +1,8 @@
 import streamlit as st
 import requests
+from ocr import extract_text_from_image
 
-def render_results_section(analyze_button, text, API_URL):
+def render_results_section(analyze_button, text, uploaded_image, API_URL):
     st.markdown("""
     <div style="
         font-family:'Syne',sans-serif;
@@ -16,20 +17,47 @@ def render_results_section(analyze_button, text, API_URL):
     </div>
     """, unsafe_allow_html=True)
 
+    # 1. Handle background OCR processing if an image is provided
+    if uploaded_image is not None and not text.strip():
+        with st.spinner("Extracting text from image via OCR..."):
+            try:
+                text = extract_text_from_image(uploaded_image)
+                # Render the clean preview box for the extracted string strings
+                st.markdown(f"""
+                <div style="
+                    margin-bottom:1rem;
+                    padding:0.8rem 1rem;
+                    background:rgba(17,28,53,0.7);
+                    border:1px solid rgba(99,120,200,0.15);
+                    border-radius:12px;
+                    color:#9fb0ff;
+                    font-size:0.82rem;
+                    line-height:1.6;
+                ">
+                    <b>Extracted Text Preview:</b><br><br>
+                    {text[:700]}...
+                </div>
+                """, unsafe_allow_html=True)
+            except Exception as e:
+                st.markdown(f"""<div style="padding:1rem;background:rgba(242,61,94,0.1);border:1px solid rgba(242,61,94,0.3);border-radius:12px;color:#f23d5e;font-size:0.88rem;">❌ OCR Failure: {str(e)}</div>""", unsafe_allow_html=True)
+                return
+
+    # 2. Handle Default Empty State View
     if not analyze_button:
         empty_state_html = """
         <div style="height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(13,22,41,0.6);border:1px dashed rgba(99,120,200,0.2);border-radius:16px;text-align:center;gap:0.75rem;">
             <div style="font-size:2.5rem;opacity:0.25;">🔍</div>
             <div style="font-size:0.9rem;color:#4a5478;font-weight:500;">Results will appear here</div>
             <div style="font-size:0.78rem;color:#2e3a5c;max-width:220px;line-height:1.6;">
-                Enter some text and hit Analyze to get a full propaganda breakdown.
+                Enter some text or upload a screenshot and hit Analyze to get a full propaganda breakdown.
             </div>
         </div>
         """
         st.markdown(empty_state_html, unsafe_allow_html=True)
         return
 
-    if text.strip() == "":
+    # 3. Handle Strict Empty Input Field Validations
+    if not text.strip() and uploaded_image is None:
         st.markdown("""
         <div style="
             padding:1rem 1.2rem;
@@ -39,11 +67,12 @@ def render_results_section(analyze_button, text, API_URL):
             color:#f5a623;
             font-size:0.88rem;
         ">
-            ⚠️ Please enter some text before analyzing.
+            ⚠️ Please enter some text or upload an image before analyzing.
         </div>
         """, unsafe_allow_html=True)
         return
 
+    # 4. Trigger Network API Analysis Payload Pipeline Loop
     with st.spinner("Analyzing propaganda patterns…"):
         try:
             response = requests.post(
@@ -101,6 +130,7 @@ def render_results_section(analyze_button, text, API_URL):
             else:
                 sent_color = "#6272e4"
 
+            # ── SCORE CARD CONTAINER RENDER ──
             st.markdown(f"""
             <div style="background:{sev_soft};border:1px solid {sev_color}40;border-radius:16px;padding:1.4rem 1.5rem;margin-bottom:1rem;box-shadow:0 0 32px {sev_glow};">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
@@ -122,6 +152,7 @@ def render_results_section(analyze_button, text, API_URL):
             </div>
             """, unsafe_allow_html=True)
 
+            # ── SENTIMENT ANALYTICS CONTAINER RENDER ──
             st.markdown(f"""
             <div style="background:rgba(13,22,41,0.8);border:1px solid rgba(99,120,200,0.18);border-radius:16px;padding:1.1rem 1.4rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;">
                 <div>
@@ -135,16 +166,12 @@ def render_results_section(analyze_button, text, API_URL):
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("""
-            <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#4a5478;margin:0.75rem 0 0.65rem;">
-                Detected Signals
-            </div>
-            """, unsafe_allow_html=True)
+            # ── DETECTED PILL BADGES RENDERS ──
+            st.markdown("""<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#4a5478;margin:0.75rem 0 0.65rem;">Detected Signals</div>""", unsafe_allow_html=True)
 
             if flags:
                 pills_html = '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;">'
                 for flag in flags:
-                    # 💡 FIX: Keep the HTML on a single, continuous line to prevent text breaking
                     pills_html += f'<div style="background:rgba(242,61,94,0.10);border:1px solid rgba(242,61,94,0.30);border-radius:999px;padding:0.35rem 0.9rem;"><span style="font-size:0.78rem;font-weight:500;color:#f23d5e;">⚑ {flag}</span></div>'
                 pills_html += "</div>"
                 st.markdown(pills_html, unsafe_allow_html=True)
@@ -153,16 +180,9 @@ def render_results_section(analyze_button, text, API_URL):
                 <div style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1.1rem;background:rgba(45,214,152,0.08);border:1px solid rgba(45,214,152,0.25);border-radius:12px;">
                     <span style="font-size:1.2rem;">✅</span>
                     <span style="font-size:0.85rem;color:#2dd698;font-weight:500;">No manipulation signals detected.</span>
-                </div>
-                """, unsafe_allow_html=True)
+                </div>""", unsafe_allow_html=True)
 
         except requests.exceptions.ConnectionError:
-            st.markdown("""
-            <div style="padding:1rem 1.2rem;background:rgba(242,61,94,0.1);border:1px solid rgba(242,61,94,0.3);border-radius:12px;color:#f23d5e;font-size:0.88rem;">
-                ❌ Cannot reach the backend. Is the FastAPI server running?
-            </div>""", unsafe_allow_html=True)
+            st.markdown("""<div style="padding:1rem 1.2rem;background:rgba(242,61,94,0.1);border:1px solid rgba(242,61,94,0.3);border-radius:12px;color:#f23d5e;font-size:0.88rem;">❌ Cannot reach the backend. Is the FastAPI server running?</div>""", unsafe_allow_html=True)
         except Exception as e:
-            st.markdown(f"""
-            <div style="padding:1rem 1.2rem;background:rgba(242,61,94,0.1);border:1px solid rgba(242,61,94,0.3);border-radius:12px;color:#f23d5e;font-size:0.88rem;">
-                ❌ Request failed: {e}
-            </div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div style="padding:1rem 1.2rem;background:rgba(242,61,94,0.1);border:1px solid rgba(242,61,94,0.3);border-radius:12px;color:#f23d5e;font-size:0.88rem;">❌ Request failed: {e}</div>""", unsafe_allow_html=True)

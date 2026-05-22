@@ -38,6 +38,11 @@ def render_input_section():
         placeholder="Paste an article, tweet, headline, or narrative here..."
     )
 
+    uploaded_image = st.file_uploader(
+    "Upload screenshot or image",
+    type=["png", "jpg", "jpeg"]
+)
+
     analyze_button = st.button(
         "🚀 Analyze Text",
         use_container_width=True
@@ -84,4 +89,4 @@ def render_input_section():
     """
     st.markdown(detect_card_html, unsafe_allow_html=True)
 
-    return text, analyze_button
+    return text, analyze_button, uploaded_image

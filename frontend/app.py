@@ -28,14 +28,15 @@ render_header()
 col1, spacer, col2 = st.columns([1, 0.06, 1])
 
 with col1:
-    text, analyze_button = render_input_section()
+    text, analyze_button, uploaded_image = render_input_section()
 
 with col2:
     
     render_results_section(
         analyze_button=analyze_button,
         text=text,
-        API_URL=API_URL
+        API_URL=API_URL,
+        uploaded_image=uploaded_image
     )
 
 render_expander_section()
