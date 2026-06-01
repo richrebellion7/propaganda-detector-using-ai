@@ -1,0 +1,3 @@
+propaganda-detector-using-ai-tazeem
+
+BACKEND_URL = "https://propaganda-detector-using-ai-1.onrender.com/analyze"

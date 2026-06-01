@@ -31,6 +31,8 @@ https://propaganda-detector-using-ai-1.onrender.com/
 
 ---
 
+![alt text](images/image.png)
+
 # 🧠 How It Works
 
 The system combines:
