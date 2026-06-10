@@ -51,49 +51,15 @@ def render_input_section():
         "🚀 Analyze Text",
         use_container_width=True
     )
-
+    
     detect_card_html = """
-    <div style="
-        margin-top:1.5rem;
-        background:rgba(17,28,53,0.75);
-        border:1px solid rgba(99,120,200,0.12);
-        border-radius:16px;
-        padding:1rem 1.2rem;
-    ">
-        <div style="
-            font-family:'Syne',sans-serif;
-            font-size:0.72rem;
-            font-weight:700;
-            letter-spacing:0.12em;
-            text-transform:uppercase;
-            color:#4a5478;
-            margin-bottom:0.75rem;
-        ">
-            What We Detect
-        </div>
-
-        <div style="
-            display:flex;
-            flex-wrap:wrap;
-            gap:0.5rem;
-        ">
-
-            <span style="background:rgba(242,61,94,0.12); color:#f23d5e; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(242,61,94,0.2);">
-                Emotional Manipulation
-            </span>
-
-            <span style="background:rgba(245,166,35,0.12); color:#f5a623; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(245,166,35,0.2);">
-                Clickbait Language
-            </span>
-
-            <span style="background:rgba(98,114,228,0.12); color:#6272e4; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(98,114,228,0.2);">
-                Conspiracy Framing
-            </span>
-
-            <span style="background:rgba(45,214,152,0.12); color:#2dd698; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(45,214,152,0.2);">
-                Urgency Tactics
-            </span>
-
+    <div style="margin-top:1.5rem; background:rgba(17,28,53,0.75); border:1px solid rgba(99,120,200,0.12); border-radius:16px; padding:1rem 1.2rem;">
+        <div style="font-family:'Syne',sans-serif; font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#4a5478; margin-bottom:0.75rem;">What We Detect</div>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+            <span style="background:rgba(242,61,94,0.12); color:#f23d5e; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(242,61,94,0.2);">Emotional Manipulation</span>
+            <span style="background:rgba(245,166,35,0.12); color:#f5a623; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(245,166,35,0.2);">Clickbait Language</span>
+            <span style="background:rgba(98,114,228,0.12); color:#6272e4; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(98,114,228,0.2);">Conspiracy Framing</span>
+            <span style="background:rgba(45,214,152,0.12); color:#2dd698; padding:0.4rem 0.7rem; border-radius:999px; font-size:0.76rem; border:1px solid rgba(45,214,152,0.2);">Urgency Tactics</span>
         </div>
     </div>
     """
